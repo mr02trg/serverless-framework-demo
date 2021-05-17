@@ -91,6 +91,12 @@
               "LogGroupName": "/aws/lambda/serverless-sample-app-dev-hello"
             }
           },
+          "AddNumLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/serverless-sample-app-dev-addNum"
+            }
+          },
           "IamRoleLambdaExecution": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -205,6 +211,12 @@
                               "HelloLogGroup",
                               "Arn"
                             ]
+                          },
+                          {
+                            "Fn::GetAtt": [
+                              "AddNumLogGroup",
+                              "Arn"
+                            ]
                           }
                         ]
                       }
@@ -221,7 +233,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless-sample-app/dev/1621253045028-2021-05-17T12:04:05.028Z/serverless-sample-app.zip"
+                "S3Key": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z/serverless-sample-app.zip"
               },
               "Handler": "s_hello.handler",
               "Runtime": "nodejs14.x",
@@ -239,15 +251,354 @@
               "HelloLogGroup"
             ]
           },
-          "HelloLambdaVersionTXor3tFJiRaMn3eK5nnj0GVzQGVZkrM9SbBrNZBzhA": {
+          "AddNumLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z/serverless-sample-app.zip"
+              },
+              "Handler": "s_addNum.handler",
+              "Runtime": "nodejs14.x",
+              "FunctionName": "serverless-sample-app-dev-addNum",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "AddNumLogGroup"
+            ]
+          },
+          "HelloLambdaVersionAtnTsFfcwtiQvWb4KsLhpJ14WQU7fohK8CuWarqUo": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "HelloLambdaFunction"
               },
-              "CodeSha256": "FC4dRJenm0PvG1p+PSeADOmAkiMA7K9vSLcG4TTjQHw="
+              "CodeSha256": "xGu8NeKXwYSAdf7sZD9u6JFLparCfl7AwR3puKPY0Cs="
             }
+          },
+          "AddNumLambdaVersioneQh6aNlDE5S15XjeQRUyvd2DjkjpNB5b01T2qhCqk": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AddNumLambdaFunction"
+              },
+              "CodeSha256": "xGu8NeKXwYSAdf7sZD9u6JFLparCfl7AwR3puKPY0Cs="
+            }
+          },
+          "ApiGatewayRestApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+              "Name": "dev-serverless-sample-app",
+              "EndpointConfiguration": {
+                "Types": [
+                  "EDGE"
+                ]
+              },
+              "Policy": ""
+            }
+          },
+          "ApiGatewayResourceMath": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "math",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceMathAdd": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceMath"
+              },
+              "PathPart": "add",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodMathAddOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": "#set($origin = $input.params(\"Origin\"))\n#if($origin == \"\") #set($origin = $input.params(\"origin\")) #end\n#if($origin.matches(\".+\")) #set($context.responseOverride.header.Access-Control-Allow-Origin = $origin) #end"
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceMathAdd"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodMathAddPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceMathAdd"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "AddNumLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            }
+          },
+          "ApiGatewayDeployment1621257660089": {
+            "Type": "AWS::ApiGateway::Deployment",
+            "Properties": {
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "StageName": "dev"
+            },
+            "DependsOn": [
+              "ApiGatewayMethodMathAddOptions",
+              "ApiGatewayMethodMathAddPost"
+            ]
+          },
+          "AddNumLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AddNumLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "ApiGatewayLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/api-gateway/serverless-sample-app-dev"
+            }
+          },
+          "CustomApiGatewayAccountCloudWatchRole": {
+            "Type": "Custom::ApiGatewayAccountRole",
+            "Version": 1,
+            "Properties": {
+              "ServiceToken": {
+                "Fn::GetAtt": [
+                  "CustomDashresourceDashapigwDashcwDashroleLambdaFunction",
+                  "Arn"
+                ]
+              }
+            }
+          },
+          "IamRoleCustomResourcesLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "dev",
+                        "serverless-sample-app",
+                        "custom-resources-lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Resource": {
+                          "Fn::Join": [
+                            ":",
+                            [
+                              "arn",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              "iam:",
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              "role/*"
+                            ]
+                          ]
+                        },
+                        "Action": [
+                          "iam:AttachRolePolicy",
+                          "iam:CreateRole",
+                          "iam:ListAttachedRolePolicies",
+                          "iam:PassRole"
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Resource": {
+                          "Fn::Join": [
+                            ":",
+                            [
+                              "arn",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              "apigateway:*::/account"
+                            ]
+                          ]
+                        },
+                        "Action": [
+                          "apigateway:GET",
+                          "apigateway:PATCH"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "CustomDashresourceDashapigwDashcwDashroleLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z/custom-resources.zip"
+              },
+              "FunctionName": "serverless-sample-app-dev-custom-resource-apigw-cw-role",
+              "Handler": "apiGatewayCloudWatchRole/handler.handler",
+              "MemorySize": 1024,
+              "Runtime": "nodejs12.x",
+              "Timeout": 180,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleCustomResourcesLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "IamRoleCustomResourcesLambdaExecution"
+            ]
           },
           "CloudWatchLogsSubscriptionFilterHelloLogGroup": {
             "Type": "AWS::Logs::SubscriptionFilter",
@@ -256,6 +607,26 @@
               "FilterPattern": "?\"REPORT RequestId: \" ?\"SERVERLESS_ENTERPRISE\"",
               "LogGroupName": {
                 "Ref": "HelloLogGroup"
+              }
+            }
+          },
+          "CloudWatchLogsSubscriptionFilterAddNumLogGroup": {
+            "Type": "AWS::Logs::SubscriptionFilter",
+            "Properties": {
+              "DestinationArn": "arn:aws:logs:ap-southeast-2:802587217904:destination:84c8a005-f45f-42aa-8320-3e36184bb1e9#4nY0dVfbRd7nVnXzwH#serverless-sample-app#dev",
+              "FilterPattern": "?\"REPORT RequestId: \" ?\"SERVERLESS_ENTERPRISE\"",
+              "LogGroupName": {
+                "Ref": "AddNumLogGroup"
+              }
+            }
+          },
+          "CloudWatchLogsSubscriptionFilterApiGatewayLogGroup": {
+            "Type": "AWS::Logs::SubscriptionFilter",
+            "Properties": {
+              "DestinationArn": "arn:aws:logs:ap-southeast-2:802587217904:destination:84c8a005-f45f-42aa-8320-3e36184bb1e9#4nY0dVfbRd7nVnXzwH#serverless-sample-app#dev",
+              "FilterPattern": "\"SLS_ACCESS_LOG\"",
+              "LogGroupName": {
+                "Ref": "ApiGatewayLogGroup"
               }
             }
           }
@@ -283,10 +654,45 @@
           "HelloLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "HelloLambdaVersionTXor3tFJiRaMn3eK5nnj0GVzQGVZkrM9SbBrNZBzhA"
+              "Ref": "HelloLambdaVersionAtnTsFfcwtiQvWb4KsLhpJ14WQU7fohK8CuWarqUo"
             },
             "Export": {
               "Name": "sls-serverless-sample-app-dev-HelloLambdaFunctionQualifiedArn"
+            }
+          },
+          "AddNumLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AddNumLambdaVersioneQh6aNlDE5S15XjeQRUyvd2DjkjpNB5b01T2qhCqk"
+            },
+            "Export": {
+              "Name": "sls-serverless-sample-app-dev-AddNumLambdaFunctionQualifiedArn"
+            }
+          },
+          "ServiceEndpoint": {
+            "Description": "URL of the service endpoint",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/dev"
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-serverless-sample-app-dev-ServiceEndpoint"
             }
           }
         }
@@ -373,6 +779,11 @@
           }
         }
       },
+      "logs": {
+        "restApi": {
+          "format": "{\"requestTime\":\"$context.requestTime\",\"requestId\":\"$context.requestId\",\"apiId\":\"$context.apiId\",\"resourceId\":\"$context.resourceId\",\"resourcePath\":\"$context.resourcePath\",\"path\":\"$context.path\",\"httpMethod\":\"$context.httpMethod\",\"status\":\"$context.status\",\"authLatency\":\"$context.authorizer.integrationLatency\",\"integrationLatency\":\"$context.integrationLatency\",\"integrationStatus\":\"$context.integrationStatus\",\"responseLatency\":\"$context.responseLatency\",\"responseLength\":\"$context.responseLength\",\"errorMessage\":\"$context.error.message\",\"format\":\"SLS_ACCESS_LOG\",\"version\":\"1.0.0\"}"
+        }
+      },
       "vpc": {}
     },
     "pluginsData": {},
@@ -386,7 +797,45 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "HelloLambdaVersionTXor3tFJiRaMn3eK5nnj0GVzQGVZkrM9SbBrNZBzhA"
+        "versionLogicalId": "HelloLambdaVersionAtnTsFfcwtiQvWb4KsLhpJ14WQU7fohK8CuWarqUo"
+      },
+      "addNum": {
+        "handler": "s_addNum.handler",
+        "events": [
+          {
+            "http": {
+              "path": "math/add",
+              "method": "post",
+              "cors": {
+                "origins": [
+                  "*"
+                ],
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent"
+                ],
+                "allowCredentials": false
+              },
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "name": "serverless-sample-app-dev-addNum",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "AddNumLambdaVersioneQh6aNlDE5S15XjeQRUyvd2DjkjpNB5b01T2qhCqk"
       }
     },
     "configValidationMode": "warn",
@@ -415,7 +864,7 @@
     "artifact": "/Users/itue/workspace/aws/serverless/serverless-sample-app/.serverless/serverless-sample-app.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/serverless-sample-app/dev/1621253045028-2021-05-17T12:04:05.028Z",
+    "artifactDirectoryName": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z",
     "artifact": "serverless-sample-app.zip"
   }
 }
