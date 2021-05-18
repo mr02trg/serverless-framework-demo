@@ -219,13 +219,13 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z/serverless-sample-app.zip"
+          "S3Key": "serverless/serverless-sample-app/dev/1621295013585-2021-05-17T23:43:33.585Z/serverless-sample-app.zip"
         },
         "Handler": "s_hello.handler",
         "Runtime": "nodejs14.x",
         "FunctionName": "serverless-sample-app-dev-hello",
-        "MemorySize": 1024,
-        "Timeout": 6,
+        "MemorySize": 128,
+        "Timeout": 3,
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -244,13 +244,13 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z/serverless-sample-app.zip"
+          "S3Key": "serverless/serverless-sample-app/dev/1621295013585-2021-05-17T23:43:33.585Z/serverless-sample-app.zip"
         },
         "Handler": "s_addNum.handler",
         "Runtime": "nodejs14.x",
         "FunctionName": "serverless-sample-app-dev-addNum",
-        "MemorySize": 1024,
-        "Timeout": 6,
+        "MemorySize": 128,
+        "Timeout": 5,
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -262,24 +262,24 @@
         "AddNumLogGroup"
       ]
     },
-    "HelloLambdaVersionAtnTsFfcwtiQvWb4KsLhpJ14WQU7fohK8CuWarqUo": {
+    "HelloLambdaVersion7xcncEhCKd4iczLbDt8LixUtXz2PQYLd6LYgUAWWXU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HelloLambdaFunction"
         },
-        "CodeSha256": "xGu8NeKXwYSAdf7sZD9u6JFLparCfl7AwR3puKPY0Cs="
+        "CodeSha256": "b74R/zhtyFS2PokDjpOO/AmiePkjUPOhcwNhcW89LfU="
       }
     },
-    "AddNumLambdaVersioneQh6aNlDE5S15XjeQRUyvd2DjkjpNB5b01T2qhCqk": {
+    "AddNumLambdaVersionLtn0bxmBzOpLFY6OgRONuJYnjbS71OD62WWttF9pX4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "AddNumLambdaFunction"
         },
-        "CodeSha256": "xGu8NeKXwYSAdf7sZD9u6JFLparCfl7AwR3puKPY0Cs="
+        "CodeSha256": "b74R/zhtyFS2PokDjpOO/AmiePkjUPOhcwNhcW89LfU="
       }
     },
     "ApiGatewayRestApi": {
@@ -409,7 +409,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1621257660089": {
+    "ApiGatewayDeployment1621295008175": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -568,7 +568,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/serverless-sample-app/dev/1621257667195-2021-05-17T13:21:07.195Z/custom-resources.zip"
+          "S3Key": "serverless/serverless-sample-app/dev/1621295013585-2021-05-17T23:43:33.585Z/custom-resources.zip"
         },
         "FunctionName": "serverless-sample-app-dev-custom-resource-apigw-cw-role",
         "Handler": "apiGatewayCloudWatchRole/handler.handler",
@@ -640,7 +640,7 @@
     "HelloLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloLambdaVersionAtnTsFfcwtiQvWb4KsLhpJ14WQU7fohK8CuWarqUo"
+        "Ref": "HelloLambdaVersion7xcncEhCKd4iczLbDt8LixUtXz2PQYLd6LYgUAWWXU"
       },
       "Export": {
         "Name": "sls-serverless-sample-app-dev-HelloLambdaFunctionQualifiedArn"
@@ -649,7 +649,7 @@
     "AddNumLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AddNumLambdaVersioneQh6aNlDE5S15XjeQRUyvd2DjkjpNB5b01T2qhCqk"
+        "Ref": "AddNumLambdaVersionLtn0bxmBzOpLFY6OgRONuJYnjbS71OD62WWttF9pX4"
       },
       "Export": {
         "Name": "sls-serverless-sample-app-dev-AddNumLambdaFunctionQualifiedArn"

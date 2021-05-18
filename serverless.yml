@@ -20,12 +20,17 @@ org: tuetruong
 # Check out our docs for more details
 frameworkVersion: '2'
 
+plugins:
+  - serverless-offline
+
 provider:
   name: aws
   runtime: nodejs14.x
   lambdaHashingVersion: 20201221
   stage: dev
   region: ap-southeast-2
+  memorySize: 128
+  timeout: 5
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -58,14 +63,43 @@ provider:
 functions:
   hello:
     handler: handler.hello
+    timeout: 3
 
-  addNum:
-    handler: addNum.addNum
+  # tightly couple with input event from api gw
+  addNumLambdaProxy:
+    handler: addNumLambdaProxy.addNum
     events:
       - http:
-          path: /math/add
+          path: /math/addNumLambdaProxy
           method: post
           cors: true
+  
+  # decouple input event from api gw
+  addNumLambdaMapping:
+    handler: addNumLambdaMapping.addNum
+    events:
+      - http:
+          path: /math/addNNumLambdaMapping
+          method: post
+          integration: lambda
+          request:
+            template:
+              application/json: >
+                #set($inputRoot = $input.path('$'))
+                {
+                  "num1": $inputRoot.input.operand1,
+                  "num2": $inputRoot.input.operand2
+                }
+          response:
+            headers:
+              Access-Control-Allow-Origin: "'*'"
+              Content-Type: "'application/json'"
+            template: >
+              #set($inputRoot = $input.path('$'))
+              {
+                "result": $inputRoot
+              }
+
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
